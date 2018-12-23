@@ -34,7 +34,7 @@ CREATE TABLE `CancellationRequest` (
   `email` VARCHAR(255) NOT NULL,
   PRIMARY KEY(reservationNo, dateCreated),
   FOREIGN KEY (`email`) REFERENCES `Contact` (`email`) ON UPDATE CASCADE,
-  FOREIGN KEY (`reservationNo`) REFERENCES `Reservation` (`reservationNo`) ON UPDATE CASCADE
+  FOREIGN KEY (`reservationNo`) REFERENCES `Reservation` (`reservationNo`) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE `Room` (
@@ -48,7 +48,7 @@ CREATE TABLE `Record` (
   `reservationNo` INTEGER(8) ZEROFILL NOT NULL,
   `roomNo` INTEGER NOT NULL,
   PRIMARY KEY(reservationNo, roomNo),
-  FOREIGN KEY (`reservationNo`) REFERENCES `Reservation` (`reservationNo`),
+  FOREIGN KEY (`reservationNo`) REFERENCES `Reservation` (`reservationNo`) ON UPDATE CASCADE ON DELETE SET CASCADE,
   FOREIGN KEY (`roomNo`) REFERENCES `Room` (`roomNo`)
 );
 
