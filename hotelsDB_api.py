@@ -7,16 +7,19 @@ import datetime
 app = Flask(__name__)
 CORS(app)
 
+# Build connection object
 def build_sql_conn():
 	cnx = mysql.connector.connect(user = 'root', password = 'wing1226',host = 'localhost',database = 'hotelsDB')
 	cursor = cnx.cursor(dictionary=True)
 	return(cnx, cursor)
-	
+
+# Close connection object	
 def close_sql_conn(cnx, cursor):
 	cnx.commit()
 	cursor.close()
 	cnx.close()
 
+# Querying for not available rooms 
 def check_not_available_room(checkin, checkout, cursor):
 	sql = ("Select Record.roomNo from Reservation Natural JOIN Record where NOT(Reservation.checkinDate > '{0}' and Reservation.checkoutDate > '{1}') OR (Reservation.checkinDate < '{0}' and Reservation.checkoutDate > '{1}') and Reservation.status <> 'Canceling'").format(checkin, checkout)
 	cursor.execute(sql)
@@ -30,7 +33,8 @@ def check_not_available_room(checkin, checkout, cursor):
 @app.route('/')
 def check() :
 	return "Connected to the API server"
-	
+
+# checking rooms status
 @app.route('/rooms', methods=['GET', 'POST'])
 def rooms() :
 	cnx, cursor = build_sql_conn()
@@ -55,7 +59,8 @@ def rooms() :
 	#Close object
 	close_sql_conn(cnx, cursor)
 	return jsonify(results=result)
-	
+
+# Querying for Reservation Records
 @app.route('/query', methods=['GET'])
 def booking_query() :
 	cnx, cursor = build_sql_conn()
@@ -69,6 +74,7 @@ def booking_query() :
 	checkin = request.args.get("checkin", default = "")
 	checkout = request.args.get("checkout", default = "")
 
+	# Construct sql command by received parameters
 	if booking_no == "all":
 		True
 	else:
@@ -87,6 +93,7 @@ def booking_query() :
 		
 	cursor.execute(query)		
 	result = cursor.fetchall()
+	
 	if result == []:
 		output = {'error':'No matching result'}		
 	else:
@@ -106,13 +113,16 @@ def booking_query() :
 	close_sql_conn(cnx, cursor)
 	return jsonify(results=result)
 	
+# ADDING NEW RESERVATIONS
 @app.route('/booking', methods=['POST'])
 def booking_build() :
 	cnx, cursor = build_sql_conn()
 	new_booking = request.get_json(force=True,silent=True)
+	
 	not_ava_rooms = check_not_available_room(new_booking['checkin'], new_booking['checkout'], cursor) 
 	rooms = new_booking['roomNo'].split(",")
 	check = [ int(i) in not_ava_rooms for i in rooms ]
+	
 	if True in check:
 		return jsonify(status="Failed, required rooms are not avaiable, please check", details=new_booking)
 	else:
@@ -150,6 +160,7 @@ def booking_build() :
 			close_sql_conn(cnx, cursor)
 			return jsonify(status="Failed",details=new_booking) 
 		
+# Submit Cancellation Request
 @app.route('/cancel', methods=['POST'])
 def booking_cancel() :
 	cnx, cursor = build_sql_conn()
