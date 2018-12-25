@@ -21,7 +21,7 @@ def close_sql_conn(cnx, cursor):
 
 # Querying for not available rooms 
 def check_not_available_room(checkin, checkout, cursor):
-	sql = ("Select Record.roomNo from Reservation Natural JOIN Record where NOT(Reservation.checkinDate > '{0}' and Reservation.checkoutDate > '{1}') AND (Reservation.checkinDate < '{0}' and Reservation.checkoutDate > '{1}')and Reservation.status <> 'Canceling'").format(checkin, checkout)
+	sql = ("Select Record.roomNo from Reservation Natural JOIN Record where NOT(Reservation.checkinDate > '{0}' AND Reservation.checkoutDate > '{1}') AND (Reservation.checkinDate < '{0}' and Reservation.checkoutDate > '{1}')and Reservation.status <> 'Canceling'").format(checkin, checkout)
 	cursor.execute(sql)
 	
 	room_not_available = cursor.fetchall()
